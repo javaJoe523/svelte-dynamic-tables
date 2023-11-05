@@ -130,6 +130,24 @@
         updateJson();
     }
 
+    var curCol = -1;
+    var curRow = 0;
+    function getCurCol(cell: { row_header: any; subheader: any; }) {
+        if (cell && (cell.row_header || cell.subheader))
+            curCol = 0;
+        else
+            curCol++;
+    
+        return curCol;
+    }
+
+    function getCurRow(cell: { row_header: any; subheader: any; }) {
+        if (cell && (cell.row_header || cell.subheader))
+            curRow++;
+    
+        return curRow;
+    }
+
     // Handle initial JSON parsing and validation
     onMount(() => {
         updateJsonString();
@@ -181,6 +199,8 @@
                     {:else}
                         <td
                             on:click={() => openCellMenu(item)}
+                            data-column-index={getCurCol(item)}
+                            data-row-index={getCurRow(item)}
                             class="editable"
                             class:col-header-1st={item.col_header && colIndex == 0}
                             class:col-header={(item.col_header && colIndex > 0) || item.total_row}
