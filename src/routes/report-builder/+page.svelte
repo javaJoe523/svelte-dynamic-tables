@@ -100,7 +100,7 @@
 	function getColSize() {
 		let size = 1;
 		if (parsedJson) {
-			size = parsedJson.table_data.find((c: { col_header: any; }) => c.col_header);
+			size = parsedJson.table_data.filter((c: { col_header: any; }) => c.col_header).length;
 			size = (size < 1) ? parsedJson.table_data.length : size;
 		}
 
@@ -164,11 +164,12 @@
             </thead>
             <tbody>
                 {#each parsedJson.table_data as item}
-                    {#if item.col_header}
+                    {#if item.col_header || item.sub_header}
                         <tr> 
                             <td
                                 on:click={() => openCellMenu(item)}
                                 class="editable"
+								class:col-header={item.col_header}
                             >
                                 {item.value || item.field}
                             </td>
@@ -177,6 +178,8 @@
                         <td
                             on:click={() => openCellMenu(item)}
                             class="editable"
+							class:row-header={item.row_header}
+							class:field-attr={item.field}
                         >
                             {item.value || item.field}
                         </td>
@@ -247,7 +250,7 @@
     table {
         width: 100%;
         border-collapse: collapse;
-        border: solid 3px;
+        border: solid 1px;
     }
 
     td {
@@ -259,7 +262,7 @@
     th {
         border: 1px solid #dddddd;
         text-align: left;
-        background-color: #f2f2f2;
+        background-color: #8f8f8f;
         padding: 8px;
     }
 
@@ -277,6 +280,24 @@
     td.editable {
         cursor: pointer;
     }
+
+
+	/* Attribute Styling */
+	.row-header {
+		font-weight: bold;
+		text-align: left;
+	}
+
+	.col-header {
+		font-weight: bold;
+		text-align: center;
+	}
+
+	.field-attr {
+		font-weight: bold;
+		text-align: center;
+		color: blue;
+	}
 
     /* Cell Menu styling */
     .cell-menu {

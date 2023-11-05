@@ -6,7 +6,7 @@
 
 <svelte:head>
 	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
+	<meta name="description" content="Table Builder App" />
 </svelte:head>
 
 <section>
@@ -18,14 +18,19 @@
 			</picture>
 		</span>
 
-		to your new<br />SvelteKit app
+		to the table builder app
 	</h1>
-
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
-
-	<Counter />
+	
+	<div class="text-column">
+		<h1>About this app</h1>
+	
+		<p>
+			This is a <a href="https://kit.svelte.dev">SvelteKit</a> app. <br />
+			It is designed for reviewing json data and modifying it for constructing a table. 
+			<br /><br />
+			Enjoy!
+		</p>
+	</div>
 </section>
 
 <style>
