@@ -16,8 +16,16 @@
                         col_header: { type: "boolean" },
                         row_header: { type: "boolean" },
                         sub_header: { type: "boolean" },
-                        value: { type: "string" },
-                        field: { type: "string" },
+                        total_row:  { type: "boolean" },
+                        disabled:   { type: "boolean" },
+                        bold:       { type: "boolean" },
+                        small:      { type: "boolean" },
+                        can_link:   { type: "boolean" },
+                        value:  { type: "string" },
+                        field:  { type: "string" },
+                        width:  { type: "string" },
+                        align:  { type: "string" },
+                        format: { type: "string" },
                     },
                     required: [],
                 },
@@ -167,16 +175,24 @@
                     {#if item.row_header || item.sub_header}
                         <tr>
                     {/if}
-                    <td
-                        on:click={() => openCellMenu(item)}
-                        class="editable"
-                        class:col-header-1st={item.col_header && colIndex == 0}
-                        class:col-header={item.col_header && colIndex > 0}
-                        class:row-header={item.row_header}
-                        class:field-attr={item.field}
-                    >
-                        {item.value || item.field}
-                    </td>
+
+                    {#if item.disabled}
+                        <td class="disabled"></td>
+                    {:else}
+                        <td
+                            on:click={() => openCellMenu(item)}
+                            class="editable"
+                            class:col-header-1st={item.col_header && colIndex == 0}
+                            class:col-header={(item.col_header && colIndex > 0) || item.total_row}
+                            class:row-header={item.row_header}
+                            class:field-linked={item.field && item.can_link}
+                            class:field-no-link={item.field && !item.can_link}
+                            class:bold-font={item.bold}
+                            class:small-font={item.small}
+                        >
+                            {item.value || item.field || ''} {#if item.format}(%){/if}
+                        </td>
+                    {/if}
                 {/each}
             </tbody>
         </table>
@@ -203,6 +219,32 @@
                 <label for="editedValue.sub_header">Sub Header:</label>
                 <input type="checkbox" id="editedValue.sub_header" bind:checked={editedValues.sub_header} />
             </div>
+            <div class="form-field">
+                <label for="editedValue.total_row">Total Row:</label>
+                <input type="checkbox" id="editedValue.total_row" bind:checked={editedValues.total_row} />
+            </div>
+            <div class="form-field">
+                <label for="editedValue.disabled">Disabled:</label>
+                <input type="checkbox" id="editedValue.disabled" bind:checked={editedValues.disabled} />
+            </div>
+            <div class="form-field">
+                <label for="editedValue.bold">Bold:</label>
+                <input type="checkbox" id="editedValue.bold" bind:checked={editedValues.bold} />
+            </div>
+            <div class="form-field">
+                <label for="editedValue.small">Small Font:</label>
+                <input type="checkbox" id="editedValue.small" bind:checked={editedValues.small} />
+            </div>
+            <div class="form-field">
+                <label for="editedValue.can_link">Can Link:</label>
+                <input type="checkbox" id="editedValue.can_link" bind:checked={editedValues.can_link} />
+            </div>
+            <label for="editedValue.width">Width (%):</label>
+            <input type="text" id="editedValue.width" bind:value={editedValues.width} />
+            <label for="editedValue.align">Alignment:</label>
+            <input type="text" id="editedValue.align" bind:value={editedValues.align} />
+            <label for="editedValue.format">Render Format:</label>
+            <input type="text" id="editedValue.format" bind:value={editedValues.format} />
             <label for="editedValue.value">Value:</label>
             <input type="text" id="editedValue.value" bind:value={editedValues.value} />
             <label for="editedValue.field">Field:</label>
@@ -292,10 +334,27 @@
 		text-align: left;
 	}
 
-	.field-attr {
+	.field-linked {
 		font-weight: bold;
 		text-align: center;
 		color: blue;
+	}
+
+	.field-no-link {
+		font-weight: bold;
+		text-align: center;
+	}
+
+	.disabled {
+		background-color: #c4c2c2;
+	}
+
+	.bold-font {
+		font-weight: bold;
+	}
+
+	.small-font {
+		font-size: small;
 	}
 
     /* Cell Menu styling */
