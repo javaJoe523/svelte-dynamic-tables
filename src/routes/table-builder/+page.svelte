@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Ajv from "ajv";
+    import Ajv, { stringify } from "ajv";
     import { onMount } from "svelte";
       
     // Define your JSON schema
@@ -124,28 +124,86 @@
             const ajv = new Ajv();
             isSchemaValid = ajv.validate(jsonSchema, parsedJson);
         } else {
-            jsonString = ''; // Set jsonString to null when parsedJson is null
+            jsonString = '';
             isSchemaValid = false;
         }
         updateJson();
     }
 
-    var curCol = -1;
-    var curRow = 0;
-    function getCurCol(cell: { row_header: any; subheader: any; }) {
-        if (cell && (cell.row_header || cell.subheader))
-            curCol = 0;
-        else
-            curCol++;
-    
+    function removeColumnItems(col: number) {
+        if (parsedJson) {
+            let curCol = -1;
+            let rebuildJson = false;
+            for (let i=0; i < parsedJson.table_data.length; i++) {
+                if (isNewRow(parsedJson.table_data[i]))
+                    curCol = 0;
+                else
+                    curCol++;
+                    
+                if (curCol == col) {
+                    parsedJson.table_data.splice(i, 1);
+                    rebuildJson = true;
+                    i--;
+                }
+            }
+            if (rebuildJson)
+                updateJsonString();
+        }
+    }
+
+    function removeRowItems(row: number) {
+        if (parsedJson) {
+            let curRow = 0;
+            let rebuildJson = false;
+            for (let i=0; i < parsedJson.table_data.length; i++) {
+                if (isNewRow(parsedJson.table_data[i]))
+                    curRow++;
+                    
+                if (curRow == row) {
+                    parsedJson.table_data.splice(i, 1);
+                    rebuildJson = true;
+                    i--;
+                }
+            }
+            if (rebuildJson)
+                updateJsonString();
+        }
+    }
+
+    function getCurCol(colIndex: number) {
+        let curCol = -1;
+        if (parsedJson) {
+            for (let i=0; i <= colIndex; i++) {
+                if (isNewRow(parsedJson.table_data[i]))
+                    curCol = 0;
+                else
+                    curCol++;
+            }
+        }
         return curCol;
     }
 
-    function getCurRow(cell: { row_header: any; subheader: any; }) {
-        if (cell && (cell.row_header || cell.subheader))
-            curRow++;
-    
+    function getCurRow(colIndex: number) {
+        let curRow = 0;
+        if (parsedJson) {
+            for (let i=0; i <= colIndex; i++) {
+                if (isNewRow(parsedJson.table_data[i]))
+                    curRow++;
+            }
+        }
         return curRow;
+    }
+
+    function isNewRow(cell: { row_header: any; subheader: any; }) {
+        return (cell && (cell.row_header || cell.subheader));
+    }
+
+
+    let isColumnHovered = -1;
+
+    // Function to handle column hover
+    function handleColumnHover(colIndex: number) {
+        isColumnHovered = colIndex;
     }
 
     // Handle initial JSON parsing and validation
@@ -190,7 +248,7 @@
             </thead>
             <tbody>
                 {#each parsedJson.table_data as item, colIndex}
-                    {#if item.row_header || item.subheader}
+                    {#if isNewRow(item)}
                         <tr>
                     {/if}
 
@@ -199,8 +257,6 @@
                     {:else}
                         <td
                             on:click={() => openCellMenu(item)}
-                            data-column-index={getCurCol(item)}
-                            data-row-index={getCurRow(item)}
                             class="editable"
                             class:col-header-1st={item.col_header && colIndex == 0}
                             class:col-header={(item.col_header && colIndex > 0) || item.total_row}
@@ -209,8 +265,30 @@
                             class:field-no-link={item.field && !item.can_link}
                             class:bold-font={item.bold}
                             class:small-font={item.small}
+                            class:hover-trashcan={isColumnHovered === colIndex}
+                            on:mouseenter={() => handleColumnHover(colIndex)}
+                            on:mouseleave={() => handleColumnHover(-1)}
                         >
                             {item.value || item.field || ''} {#if item.format}(%){/if}
+
+                            {#if isColumnHovered === colIndex && colIndex > 0}
+                                <span
+                                    class="delete-button"
+                                    data-row-index={getCurRow(colIndex)}
+                                    data-column-index={getCurCol(colIndex)}
+                                    on:click={(e) => {
+                                        e.stopPropagation(); // Prevent event propagation to the cell
+                                        let col = e.target.getAttribute('data-column-index');
+                                        let row = e.target.getAttribute('data-row-index');
+                                        if (row > 1)
+                                            removeRowItems(row);
+                                        else
+                                            removeColumnItems(col);
+                                    }}
+                                >
+                                    &#10006;
+                                </span>
+                            {/if}
                         </td>
                     {/if}
                 {/each}
@@ -325,9 +403,14 @@
         background-color: #f2f2f2;
     }
 
-    /* Additional styling for editable cells */
     td.editable {
         cursor: pointer;
+    }
+
+    .delete-button {
+        cursor: pointer;
+        color: red;
+        font-size: 18px;
     }
 
 
