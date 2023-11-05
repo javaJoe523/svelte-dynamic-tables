@@ -163,27 +163,20 @@
                 </tr>
             </thead>
             <tbody>
-                {#each parsedJson.table_data as item}
-                    {#if item.col_header || item.sub_header}
-                        <tr> 
-                            <td
-                                on:click={() => openCellMenu(item)}
-                                class="editable"
-								class:col-header={item.col_header}
-                            >
-                                {item.value || item.field}
-                            </td>
-                        </tr>
-                    {:else}
-                        <td
-                            on:click={() => openCellMenu(item)}
-                            class="editable"
-							class:row-header={item.row_header}
-							class:field-attr={item.field}
-                        >
-                            {item.value || item.field}
-                        </td>
+                {#each parsedJson.table_data as item, colIndex}
+                    {#if item.row_header || item.sub_header}
+                        <tr>
                     {/if}
+                    <td
+                        on:click={() => openCellMenu(item)}
+                        class="editable"
+                        class:col-header-1st={item.col_header && colIndex == 0}
+                        class:col-header={item.col_header && colIndex > 0}
+                        class:row-header={item.row_header}
+                        class:field-attr={item.field}
+                    >
+                        {item.value || item.field}
+                    </td>
                 {/each}
             </tbody>
         </table>
@@ -270,12 +263,6 @@
         background-color: #f2f2f2;
     }
 
-    /* Center the table */
-    section {
-        display: flex;
-        justify-content: center;
-    }
-
     /* Additional styling for editable cells */
     td.editable {
         cursor: pointer;
@@ -283,14 +270,26 @@
 
 
 	/* Attribute Styling */
-	.row-header {
+    section {
+        display: flex;
+        justify-content: center;
+    }
+
+	.col-header-1st {
 		font-weight: bold;
 		text-align: left;
+        background-color: #c4c2c2;
 	}
 
 	.col-header {
 		font-weight: bold;
 		text-align: center;
+        background-color: #c4c2c2;
+	}
+
+	.row-header {
+		font-weight: bold;
+		text-align: left;
 	}
 
 	.field-attr {
