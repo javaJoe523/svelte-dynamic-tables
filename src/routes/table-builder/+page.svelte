@@ -271,7 +271,7 @@
                         >
                             {item.value || item.field || ''} {#if item.format}(%){/if}
 
-                            {#if isColumnHovered === colIndex && colIndex > 0}
+                            {#if isColumnHovered === colIndex && colIndex > 0 && ( (getCurCol(colIndex) == 0)==(getCurRow(colIndex) > 0) )}
                                 <span
                                     class="delete-button"
                                     data-row-index={getCurRow(colIndex)}
@@ -404,7 +404,6 @@
     }
 
     td.editable {
-        cursor: pointer;
     }
 
     .delete-button {
