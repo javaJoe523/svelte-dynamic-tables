@@ -15,7 +15,7 @@
                     properties: {
                         col_header: { type: "boolean" },
                         row_header: { type: "boolean" },
-                        sub_header: { type: "boolean" },
+                        subheader: { type: "boolean" },
                         total_row:  { type: "boolean" },
                         disabled:   { type: "boolean" },
                         bold:       { type: "boolean" },
@@ -105,9 +105,9 @@
     }
 
 	// Get the number of columns
-	function getColSize() {
+	function getColSize(check=true) {
 		let size = 1;
-		if (parsedJson) {
+		if (check && parsedJson) {
 			size = parsedJson.table_data.filter((c: { col_header: any; }) => c.col_header).length;
 			size = (size < 1) ? parsedJson.table_data.length : size;
 		}
@@ -172,7 +172,7 @@
             </thead>
             <tbody>
                 {#each parsedJson.table_data as item, colIndex}
-                    {#if item.row_header || item.sub_header}
+                    {#if item.row_header || item.subheader}
                         <tr>
                     {/if}
 
@@ -216,8 +216,8 @@
                 <input type="checkbox" id="editedValue.row_header" bind:checked={editedValues.row_header} />
             </div>
             <div class="form-field">
-                <label for="editedValue.sub_header">Sub Header:</label>
-                <input type="checkbox" id="editedValue.sub_header" bind:checked={editedValues.sub_header} />
+                <label for="editedValue.subheader">Sub Header:</label>
+                <input type="checkbox" id="editedValue.subheader" bind:checked={editedValues.subheader} />
             </div>
             <div class="form-field">
                 <label for="editedValue.total_row">Total Row:</label>
