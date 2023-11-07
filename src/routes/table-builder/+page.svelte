@@ -36,6 +36,7 @@
   
     let jsonString = ''; // Initial JSON string
     let parsedJson: Record<string, any> | null = null; // Parsed JSON object or null
+    $: parsedJson = parsedJson
     let isValidJson = false; // Flag to track JSON validity
     let isSchemaValid = false; // Flag to track JSON schema validity
 
@@ -143,7 +144,6 @@
                 if (curCol == col) {
                     parsedJson.table_data.splice(i, 1);
                     rebuildJson = true;
-                    i--;
                 }
             }
             if (rebuildJson)
@@ -163,6 +163,68 @@
                     parsedJson.table_data.splice(i, 1);
                     rebuildJson = true;
                     i--;
+                }
+            }
+            if (rebuildJson)
+                updateJsonString();
+        }
+    }
+
+    function addColumnItems(col: number) {
+        if (parsedJson) {
+            let curCol = 0;
+            let curRow = 0;
+            let rebuildJson = false;
+            for (let i=0; i < parsedJson.table_data.length; i++) {
+                if (isNewRow(parsedJson.table_data[i])) {
+                    curCol = 0;
+                    curRow++;
+                } else
+                    curCol++;
+                    
+                if (curCol == col) {
+                    let newCell: Record<string, any> = {};
+                    if (curRow == 0) {
+                        newCell['col_header'] = true;
+                    }
+                    parsedJson.table_data.splice(i, 1, newCell);
+                    rebuildJson = true;
+                    i++;
+                    curCol++;
+                }
+            }
+            if (rebuildJson)
+                updateJsonString();
+        }
+    }
+
+    function addRowItems(row: number) {
+        if (parsedJson) {
+            let curCol = -1;
+            let curRow = 1;
+            let colCount = 0;
+            let rebuildJson = false;
+            for (let i=0; i < parsedJson.table_data.length; i++) {
+                if (isNewRow(parsedJson.table_data[i])) {
+                    curCol = 0;
+                    curRow++;
+                } else {
+                    if (curRow == 1)
+                        colCount++;
+                    curCol++;
+                }
+                    
+                if (curRow == row) {
+                    let newCell = {"row_header": true};
+                    parsedJson.table_data.splice(i+colCount, 0, newCell);
+                    i++;
+                    for (let c=1; c < colCount; c++) {
+                        parsedJson.table_data.splice(i+colCount, 0, {});
+                        i++;
+                    }
+                    rebuildJson = true;
+                    curCol = 0;
+                    curRow++;
                 }
             }
             if (rebuildJson)
@@ -253,7 +315,10 @@
                     {/if}
 
                     {#if item.disabled}
-                        <td class="disabled"></td>
+                        <td 
+                            on:click={() => openCellMenu(item)}
+                            class="disabled"
+                        ></td>
                     {:else}
                         <td
                             on:click={() => openCellMenu(item)}
@@ -269,15 +334,30 @@
                             on:mouseenter={() => handleColumnHover(colIndex)}
                             on:mouseleave={() => handleColumnHover(-1)}
                         >
-                            {item.value || item.field || ''} {#if item.format}(%){/if}
+                            {item.value || item.field || ''} {#if item.format}({item.format}){/if}
 
                             {#if isColumnHovered === colIndex && colIndex > 0 && ( (getCurCol(colIndex) == 0)==(getCurRow(colIndex) > 0) )}
+                                <span
+                                    class="add-button"
+                                    data-row-index={getCurRow(colIndex)}
+                                    data-column-index={getCurCol(colIndex)}
+                                    on:click|stopPropagation={(e) => {
+                                        let col = e.target.getAttribute('data-column-index');
+                                        let row = e.target.getAttribute('data-row-index');
+                                        console.log(`Adding Rows ${row}`);
+                                        if (row > 1)
+                                            addRowItems(row);
+                                        else
+                                            addColumnItems(col);
+                                    }}
+                                >
+                                    &#43;
+                                </span>
                                 <span
                                     class="delete-button"
                                     data-row-index={getCurRow(colIndex)}
                                     data-column-index={getCurCol(colIndex)}
-                                    on:click={(e) => {
-                                        e.stopPropagation(); // Prevent event propagation to the cell
+                                    on:click|stopPropagation={(e) => {
                                         let col = e.target.getAttribute('data-column-index');
                                         let row = e.target.getAttribute('data-row-index');
                                         if (row > 1)
@@ -404,14 +484,22 @@
     }
 
     td.editable {
+        cursor: pointer;
     }
 
     .delete-button {
         cursor: pointer;
         color: red;
         font-size: 18px;
+        font-weight: bold;
     }
 
+    .add-button {
+        cursor: pointer;
+        color: green;
+        font-size: 20px;
+        font-weight: bold;
+    }
 
 	/* Attribute Styling */
     section {
