@@ -186,8 +186,11 @@
                     let newCell: Record<string, any> = {};
                     if (curRow == 0) {
                         newCell['col_header'] = true;
+                        parsedJson.table_data.splice(i+2, 0, newCell);
+                    } else {
+                        parsedJson.table_data.splice(i+1, 0, newCell);
                     }
-                    parsedJson.table_data.splice(i, 1, newCell);
+                    
                     rebuildJson = true;
                     i++;
                     curCol++;
